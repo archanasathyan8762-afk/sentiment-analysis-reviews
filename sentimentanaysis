@@ -4,7 +4,7 @@
   "metadata": {
     "colab": {
       "provenance": [],
-      "authorship_tag": "ABX9TyONzEMzrRMJo4aOhhmeypXS",
+      "authorship_tag": "ABX9TyOjATZf3NxHl2m6BgjLWLOx",
       "include_colab_link": true
     },
     "kernelspec": {
@@ -28,13 +28,13 @@
     },
     {
       "cell_type": "code",
-      "execution_count": 2,
+      "execution_count": 22,
       "metadata": {
         "colab": {
           "base_uri": "https://localhost:8080/"
         },
         "id": "zPRKoTeyhvyM",
-        "outputId": "88a24b30-fd63-4dc8-fea6-832cc041974e"
+        "outputId": "baed26b0-21ad-4132-f5ea-38e9ca801509"
       },
       "outputs": [
         {
@@ -76,9 +76,9 @@
           "base_uri": "https://localhost:8080/"
         },
         "id": "_1oJVsz5jxFO",
-        "outputId": "098cb614-f733-45f1-c328-013482fbd174"
+        "outputId": "951586ed-4d20-4ca4-fbdb-394686988b35"
       },
-      "execution_count": 8,
+      "execution_count": 23,
       "outputs": [
         {
           "output_type": "stream",
@@ -101,9 +101,9 @@
           "base_uri": "https://localhost:8080/"
         },
         "id": "Z9JUN_fil0Yo",
-        "outputId": "e32808c1-b9d9-403b-88e0-d6ff81f925c8"
+        "outputId": "3903636c-7be9-4e97-ba2e-a39102b1a22e"
       },
-      "execution_count": 11,
+      "execution_count": 24,
       "outputs": [
         {
           "output_type": "stream",
@@ -145,9 +145,9 @@
           "base_uri": "https://localhost:8080/"
         },
         "id": "a3-rNQl8oWvD",
-        "outputId": "eadd4a3f-1aa9-4f6a-cbca-0aa2fc2e8c99"
+        "outputId": "ffb429fb-675b-4b35-822a-bb9b3dafef2a"
       },
-      "execution_count": 17,
+      "execution_count": 25,
       "outputs": [
         {
           "output_type": "stream",
@@ -174,9 +174,9 @@
           "base_uri": "https://localhost:8080/"
         },
         "id": "b2aEKVMQoo9X",
-        "outputId": "74f033f2-3249-4b2a-95e8-73db4bc4ef21"
+        "outputId": "d92215ba-9080-4742-b46d-b3b6ddc6af3f"
       },
-      "execution_count": 20,
+      "execution_count": 26,
       "outputs": [
         {
           "output_type": "stream",
@@ -210,9 +210,9 @@
           "base_uri": "https://localhost:8080/"
         },
         "id": "T6o7-PR0o7J-",
-        "outputId": "96da842a-dc00-421e-e2ed-745f575b569c"
+        "outputId": "2e9e0056-9ef5-41aa-b8da-bd33d6e3ac60"
       },
-      "execution_count": 18,
+      "execution_count": 27,
       "outputs": [
         {
           "output_type": "stream",
@@ -221,6 +221,38 @@
             "this movie was absolutely fantastic ,loved every minute -> positive\n",
             "worst film ever ,a complete waste of time -> negative\n",
             "it was not good at all -> negative\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def predict_sentiment(review):\n",
+        "    cleaned = clean(review)                      # same cleaning as training\n",
+        "    vec = tfidf.transform([cleaned])             # same vocabulary as training\n",
+        "    label = model.predict(vec)[0]\n",
+        "    confidence = model.predict_proba(vec).max()  # highest class probability\n",
+        "    return label, round(confidence * 100, 1)\n",
+        "\n",
+        "print(predict_sentiment(\"It was not good at all\"))\n",
+        "print(predict_sentiment(\"Brilliant acting and a beautiful story\"))"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "wYCorE303sBZ",
+        "outputId": "93db3703-f928-4ad5-a1fe-2928adf07ff9"
+      },
+      "execution_count": 28,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "('negative', np.float64(92.4))\n",
+            "('positive', np.float64(95.8))\n"
           ]
         }
       ]
