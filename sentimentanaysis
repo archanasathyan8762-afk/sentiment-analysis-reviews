@@ -1,0 +1,229 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyONzEMzrRMJo4aOhhmeypXS",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/archanasathyan8762-afk/sentiment-analysis-reviews/blob/main/sentimentanaysis\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 2,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "zPRKoTeyhvyM",
+        "outputId": "88a24b30-fd63-4dc8-fea6-832cc041974e"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "(50000, 2)\n",
+            "sentiment\n",
+            "positive    25000\n",
+            "negative    25000\n",
+            "Name: count, dtype: int64\n",
+            "One of the other reviewers has mentioned that after watching just 1 Oz episode you'll be hooked. They are right, as this is exactly what happened with me.<br /><br />The first thing that struck me abo\n"
+          ]
+        }
+      ],
+      "source": [
+        "import pandas as pd\n",
+        "df=pd.read_csv(\"IMDB Dataset.csv\")\n",
+        "print(df.shape)\n",
+        "print(df['sentiment'].value_counts())\n",
+        "print(df['review'][0][:200])"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import re\n",
+        "def clean(text):\n",
+        "  text=text.lower()\n",
+        "  text=re.sub(r\"<.*?>\",\" \",text)\n",
+        "  text=re.sub(r\"[^a-z\\s]\",\"\",text)\n",
+        "  text=re.sub(r\"\\s+\",\" \",text).strip()\n",
+        "  return text\n",
+        "sample=\"This movie is great!!!!<br/><br/>Loved it,10/10.\"\n",
+        "print(clean(sample))"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "_1oJVsz5jxFO",
+        "outputId": "098cb614-f733-45f1-c328-013482fbd174"
+      },
+      "execution_count": 8,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "this movie is great loved it\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df['clean_review']=df['review'].apply(clean)\n",
+        "print(df['review'][0][:100])\n",
+        "print(df['clean_review'][0][:100])"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "Z9JUN_fil0Yo",
+        "outputId": "e32808c1-b9d9-403b-88e0-d6ff81f925c8"
+      },
+      "execution_count": 11,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "One of the other reviewers has mentioned that after watching just 1 Oz episode you'll be hooked. The\n",
+            "one of the other reviewers has mentioned that after watching just oz episode youll be hooked they ar\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from sklearn.model_selection import train_test_split\n",
+        "from sklearn.feature_extraction.text import TfidfVectorizer\n",
+        "from sklearn.linear_model import LogisticRegression\n",
+        "from sklearn.metrics import accuracy_score\n",
+        "\n",
+        "X = df['clean_review']\n",
+        "y = df['sentiment']\n",
+        "\n",
+        "X_train, X_test, y_train, y_test = train_test_split(\n",
+        "    X, y, test_size=0.2, random_state=42, stratify=y\n",
+        ")\n",
+        "print(len(X_train), len(X_test))\n",
+        "\n",
+        "tfidf = TfidfVectorizer(max_features=20000,ngram_range=(1,2))\n",
+        "X_train_vec = tfidf.fit_transform(X_train)   # learns vocab from train ONLY\n",
+        "X_test_vec = tfidf.transform(X_test)         # just applies it\n",
+        "\n",
+        "model = LogisticRegression(max_iter=1000)\n",
+        "model.fit(X_train_vec, y_train)\n",
+        "\n",
+        "print(\"Accuracy:\", accuracy_score(y_test, model.predict(X_test_vec)))\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "a3-rNQl8oWvD",
+        "outputId": "eadd4a3f-1aa9-4f6a-cbca-0aa2fc2e8c99"
+      },
+      "execution_count": 17,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "40000 10000\n",
+            "Accuracy: 0.9049\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from sklearn.metrics import classification_report, confusion_matrix\n",
+        "\n",
+        "y_pred = model.predict(X_test_vec)\n",
+        "\n",
+        "print(classification_report(y_test, y_pred))\n",
+        "print(confusion_matrix(y_test, y_pred))\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "b2aEKVMQoo9X",
+        "outputId": "74f033f2-3249-4b2a-95e8-73db4bc4ef21"
+      },
+      "execution_count": 20,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "              precision    recall  f1-score   support\n",
+            "\n",
+            "    negative       0.91      0.90      0.90      5000\n",
+            "    positive       0.90      0.91      0.91      5000\n",
+            "\n",
+            "    accuracy                           0.90     10000\n",
+            "   macro avg       0.90      0.90      0.90     10000\n",
+            "weighted avg       0.90      0.90      0.90     10000\n",
+            "\n",
+            "[[4491  509]\n",
+            " [ 442 4558]]\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "tests=[\"this movie was absolutely fantastic ,loved every minute\",\"worst film ever ,a complete waste of time\",\"it was not good at all\"]\n",
+        "for t in tests:\n",
+        "  vec=tfidf.transform([clean(t)])\n",
+        "  print(t,\"->\",model.predict(vec)[0])"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "T6o7-PR0o7J-",
+        "outputId": "96da842a-dc00-421e-e2ed-745f575b569c"
+      },
+      "execution_count": 18,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "this movie was absolutely fantastic ,loved every minute -> positive\n",
+            "worst film ever ,a complete waste of time -> negative\n",
+            "it was not good at all -> negative\n"
+          ]
+        }
+      ]
+    }
+  ]
+}
